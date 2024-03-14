@@ -1,3 +1,7 @@
+def COLOR_MAP = [
+    'SUCCESS': 'good',
+    'FAILURE': 'danger',
+]
 pipeline{
     agent{
         label "jenkins-agent"
@@ -71,6 +75,14 @@ pipeline{
                     sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'https://jenkins.codersneverquit.in/job/gitops-complete-pipeline/buildWithParameters?token=gitops-token'"
                 }
             }
+        }
+    }
+    post {
+        always {
+            echo 'Slack Notification.'
+            slackSend channel: '#complete-prodcution-e2e-pipeline',
+                color: COLOR_MAP[currentBuild.currentResult],
+                message: "*${currentBuild.currentResult}:* job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
         }
     }
 }
